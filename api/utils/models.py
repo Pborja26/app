@@ -37,6 +37,7 @@ class AuditBaseModel(TimeStampedModel):
 class Theme(AuditBaseModel):
     CATEGORIES_OPTIONS = [
         ("primary", "primary"),
+        ("secondary", "secondary"),
         ("neutral", "neutral"),
         ("feedback", "feedback"),
     ]
