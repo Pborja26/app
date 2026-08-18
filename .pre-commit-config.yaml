@@ -1,0 +1,22 @@
+repos:
+  - repo: local
+    hooks:
+      - id: python-compileall
+        name: Check Python syntax
+        entry: python3 scripts/check_python_syntax.py
+        language: system
+        files: ^api/.*\.py$
+
+      - id: trailing-whitespace
+        name: Check trailing whitespace
+        entry: >-
+          python3 -c 'import pathlib, sys; bad=[]; [bad.append((str(p), i)) for name in sys.argv[1:] for p in [pathlib.Path(name)] if p.is_file() and p.suffix not in {".png", ".jpg", ".jpeg", ".gif", ".ico", ".pdf"} for i, line in enumerate(p.read_text(errors="ignore").splitlines(), 1) if line.rstrip() != line]; [print(f"{path}:{line}: trailing whitespace") for path, line in bad]; sys.exit(1 if bad else 0)'
+        language: system
+        types: [text]
+
+      - id: end-of-file
+        name: Check final newline
+        entry: >-
+          python3 -c 'import pathlib, sys; bad=[]; [bad.append(name) for name in sys.argv[1:] for p in [pathlib.Path(name)] if p.is_file() and p.read_bytes() and not p.read_bytes().endswith(b"\n")]; [print(f"{name}: missing final newline") for name in bad]; sys.exit(1 if bad else 0)'
+        language: system
+        types: [text]
