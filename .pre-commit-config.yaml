@@ -1,22 +1,45 @@
+default_language_version:
+  python: python3.12
+
 repos:
   - repo: local
     hooks:
-      - id: python-compileall
+      - id: no-google-maps-secrets-in-ui
+        name: Block Google Maps secrets in ui/src
+        entry: bash -c '! grep -nE "REACT_APP_GOOGLE|AIzaSy" "$@"' --
+        language: system
+        files: ^ui/src/
+
+      - id: python-syntax
         name: Check Python syntax
         entry: python3 scripts/check_python_syntax.py
         language: system
         files: ^api/.*\.py$
 
-      - id: trailing-whitespace
-        name: Check trailing whitespace
-        entry: >-
-          python3 -c 'import pathlib, sys; bad=[]; [bad.append((str(p), i)) for name in sys.argv[1:] for p in [pathlib.Path(name)] if p.is_file() and p.suffix not in {".png", ".jpg", ".jpeg", ".gif", ".ico", ".pdf"} for i, line in enumerate(p.read_text(errors="ignore").splitlines(), 1) if line.rstrip() != line]; [print(f"{path}:{line}: trailing whitespace") for path, line in bad]; sys.exit(1 if bad else 0)'
+      - id: eslint
+        name: ESLint
+        entry: ui/node_modules/.bin/eslint --fix
         language: system
-        types: [text]
+        files: ^ui/src/.*\.[jt]sx?$
+        types: [file]
 
-      - id: end-of-file
-        name: Check final newline
-        entry: >-
-          python3 -c 'import pathlib, sys; bad=[]; [bad.append(name) for name in sys.argv[1:] for p in [pathlib.Path(name)] if p.is_file() and p.read_bytes() and not p.read_bytes().endswith(b"\n")]; [print(f"{name}: missing final newline") for name in bad]; sys.exit(1 if bad else 0)'
-        language: system
-        types: [text]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        exclude: ^helm-chart/templates/
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        files: ^api/.*\.py$
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: ^ui/src/.*\.[jt]sx?$
+        args: [--use-tabs, --no-cache]
